@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CivilTech India Pvt. Ltd.- Chemical Department</title>
 <!-- PWA Manifest -->
-<link rel="manifest" href="/manifest.json">
+<link rel="manifest" href="/ChemCal/manifest.json">
 
 <!-- Theme color for Android -->
 <meta name="theme-color" content="#003366">
 
 <!-- Icons -->
-<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/ChemCal/icon-192.png">
 
   <style>
     /* Global */
@@ -1486,7 +1486,7 @@
 // Register service worker if supported
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
+    navigator.serviceWorker.register('/ChemCal/sw.js')
       .then(reg => console.log('SW registered:', reg))
       .catch(err => console.error('SW registration failed:', err));
   });
