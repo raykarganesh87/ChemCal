@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CivilTech India Pvt. Ltd.- Chemical Department</title>
+<!-- PWA Manifest -->
+<link rel="manifest" href="/manifest.json">
+
+<!-- Theme color for Android -->
+<meta name="theme-color" content="#003366">
+
+<!-- Icons -->
+<link rel="apple-touch-icon" href="/icon-192.png">
+
+  <style>
+    /* Global */
+    * ,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f4f4f4;
+      color: #333;
+    }
+
+    header {
+      background: #003366;
+      color: white;
+      padding: 12px 8px;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 1.4rem;
+      margin: 4px 0;
+    }
+
+    .subtitle {
+      font-size: 1rem;
+      font-weight: bold;
+      margin-top: 2px;
+    }
+
+    .container {
+      padding: 16px;
+      max-width: 100%;
+      margin: auto;
+    }
+
+    .nav-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .nav-buttons button {
+      padding: 8px 12px;
+      font-size: 14px;
+      background: #007acc;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      max-width: 48%;
+    }
+
+    .nav-buttons button:hover {
+      background: #005f99;
+    }
+
+    .calculator-section {
+      display: none;
+      background: white;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      margin-bottom: 16px;
+
+      /* make inner content scrollable if tall */
+      max-height: calc(100vh - 160px);
+      overflow-y: auto;
+    }
+
+    .calculator-section.active {
+      display: block;
+    }
+
+    /* Scientific Calculator */
+    #calcDisplay {
+      background: #222;
+      color: white;
+      padding: 10px;
+      font-size: 20px;
+      text-align: right;
+      border-radius: 6px 6px 0 0;
+      margin-bottom: 0;
+      min-height: 44px;
+      height: auto;
+      overflow-x: auto;
+      word-wrap: break-word;
+    }
+
+    #calcSubDisplay {
+      background:#333;
+      color:#ccc;
+      padding:6px 10px;
+      font-size:13px;
+      text-align:right;
+      border-radius:0 0 6px 6px;
+      margin-bottom:10px;
+      min-height:18px;
+    }
+
+    .calc-buttons {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .calc-btn {
+      padding: 10px;
+      font-size: 14px;
+      border: none;
+      border-radius: 4px;
+      background: #f0f0f0;
+      cursor: pointer;
+    }
+
+    .calc-btn:hover {
+      background: #ddd;
+    }
+
+    .result {
+      font-weight: bold;
+      margin-top: 10px;
+      color: green;
+    }
+
+    /* Periodic Table wrapper for horizontal scroll */
+    .periodic-wrapper {
+      width: 100%;
+      overflow-x: auto;     /* horizontal scroll */
+      overflow-y: visible;  /* allow full height inside */
+    }
+
+    /* Periodic Table */
+    .periodic-table {
+      display: grid;
+      grid-template-columns: repeat(18, 40px); /* fixed width */
+      grid-auto-rows: minmax(30px, 1fr);
+      gap: 2px;
+      margin: 12px 0;
+      padding: 6px;
+    }
+
+    .element {
+      padding: 4px;
+      border: 1px solid #ddd;
+      text-align: center;
+      background-color: #fff;
+      transition: all 0.2s ease;
+      font-family: Arial, sans-serif;
+    }
+
+    .element:hover {
+      transform: scale(1.05);
+      z-index: 1;
+      box-shadow: 0 0 12px rgba(0,0,0,0.2);
+    }
+
+    .number {
+      font-size: 0.6em;
+      font-weight: bold;
+      color: #444;
+    }
+
+    .symbol {
+      font-size: 1em;
+      font-weight: bold;
+      margin: 2px 0;
+      color: #222;
+    }
+
+    .weight {
+      font-size: 0.5em;
+      color: #666;
+    }
+
+    .alkali          { background-color: #FF6666; }
+    .alkaline-earth  { background-color: #FFDEAD; }
+    .transition      { background-color: #FFB6C1; }
+    .post-transition { background-color: #98FB98; }
+    .metalloid       { background-color: #7FFFD4; }
+    .nonmetal        { background-color: #87CEFA; }
+    .halogen         { background-color: #FFFF99; }
+    .noble-gas       { background-color: #DDA0DD; }
+    .lanthanide      { background-color: #FFB7C5; }
+    .actinide        { background-color: #FF99CC; }
+
+    /* Chemistry tools */
+    .chemistry-tool {
+      margin-top: 16px;
+    }
+
+    .chemistry-tool input,
+    .chemistry-tool select {
+      padding: 8px;
+      margin: 5px;
+      width: 200px;
+    }
+
+    /* Unit Converter */
+    .unit-converter-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Dilution & concentration styles */
+    .card {
+      background: #f9fbff;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      border: 1px solid #eef4ff;
+      box-shadow: 0 4px 12px rgba(75, 108, 183, 0.08);
+    }
+
+    .card-title {
+      font-size: 18px;
+      color: #182848;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #eef4ff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-title i {
+      margin-right: 4px;
+      background: #4b6cb7;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 14px;
+    }
+
+    .result-box {
+      background: #e8f0fe;
+      border-left: 4px solid #4b6cb7;
+      padding: 15px;
+      border-radius: 0 8px 8px 0;
+      margin-top: 15px;
+      display: none;
+    }
+
+    .result-box.show {
+      display: block;
+    }
+
+    .result-title {
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #182848;
+    }
+
+    .result-value {
+      font-size: 18px;
+      color: #4b6cb7;
+      font-weight: 600;
+      word-break: break-all;
+    }
+
+    .units-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .unit-card {
+      background: white;
+      border: 1px solid #e0e6f5;
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .unit-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(75, 108, 183, 0.15);
+    }
+
+    .unit-name {
+      font-weight: 600;
+      color: #182848;
+      margin-bottom: 6px;
+    }
+
+    .unit-value {
+      color: #4b6cb7;
+      font-size: 16px;
+      font-weight: 600;
+      word-break: break-all;
+    }
+
+    .serial-dilution {
+      margin-top: 20px;
+    }
+
+    .step {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 15px;
+      background: #f0f5ff;
+      padding: 15px;
+      border-radius: 10px;
+      border: 1px solid #e0e6f5;
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #e0e6f5;
+      gap: 10px;
+    }
+
+    .step-number {
+      background: #4b6cb7;
+      color: white;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    .step-inputs {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      width: 100%;
+    }
+
+    .add-step {
+      background: #e8f0fe;
+      color: #4b6cb7;
+      border: 1px dashed #4b6cb7;
+      padding: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.3s;
+      margin-top: 10px;
+    }
+
+    .add-step:hover {
+      background: #d0e0f8;
+    }
+
+    .remove-step {
+      background: #ffebee;
+      color: #e53935;
+      border: 1px dashed #e53935;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.3s;
+      margin-top: 10px;
+      width: fit-content;
+    }
+
+    .remove-step:hover {
+      background: #ffcdd2;
+    }
+
+    .btn {
+      background: linear-gradient(90deg, #4b6cb7 0%, #182848 100%);
+      color: white;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin-top: 10px;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(75, 108, 183, 0.3);
+    }
+
+    .input-group {
+      margin-bottom: 8px;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 4px;
+      color: #2c3e50;
+      font-weight: 500;
+    }
+
+    .input-group input,
+    .input-group select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #d1d9e6;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    footer {
+      background: #003366;
+      color: white;
+      text-align: center;
+      padding: 15px 0;
+      margin-top: 30px;
+    }
+
+    /* Mobile tweaks */
+    @media (max-width: 600px) {
+      .container {
+        padding: 10px;
+      }
+
+      header h1 {
+        font-size: 1.2rem;
+      }
+
+      .subtitle {
+        font-size: 0.9rem;
+      }
+
+      .calculator-section {
+        max-height: calc(100vh - 140px);
+        padding: 12px;
+      }
+
+      .calc-buttons {
+        gap: 4px;
+      }
+
+      .calc-btn {
+        padding: 8px;
+        font-size: 13px;
+      }
+
+      .periodic-table {
+        grid-template-columns: repeat(18, 32px);
+        grid-auto-rows: minmax(24px, 1fr);
+        padding: 4px;
+        margin: 8px 0;
+      }
+
+      .element {
+        padding: 1px;
+      }
+
+      .symbol {
+        font-size: 0.7em;
+      }
+
+      .number,
+      .weight {
+        font-size: 0.4em;
+      }
+
+      .step-inputs {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>CivilTech India Pvt. Ltd.</h1>
+    <div class="subtitle">Chemical Department</div>
+  </header>
+
+  <div class="container">
+    <div class="nav-buttons">
+      <button onclick="showSection('basicMath')">Basic Math</button>
+      <button onclick="showSection('chemistry')">Chemistry</button>
+      <button onclick="showSection('unitConverter')">Unit Converter</button>
+      <button onclick="showSection('dilutionCalculator')">Dilution Calculator</button>
+    </div>
+
+    <!-- Basic Math / Scientific Calculator Section -->
+    <div id="basicMath" class="calculator-section active">
+      <h2>Scientific Calculator</h2>
+
+      <div id="calcDisplay">0</div>
+      <div id="calcSubDisplay"></div>
+
+      <div class="calc-buttons">
+        <!-- Top row -->
+        <button class="calc-btn" onclick="clearDisplay()" style="background:#ff3b30;color:white;">C</button>
+        <button class="calc-btn" onclick="deleteLast()">DEL</button>
+        <button class="calc-btn" onclick="insertFunction('^')">x^y</button>
+        <button class="calc-btn" onclick="insertFunction('sqrt(')">√</button>
+        <button class="calc-btn" id="angleModeBtn" onclick="toggleAngleMode()">DEG</button>
+
+        <!-- Functions -->
+        <button class="calc-btn" onclick="insertFunction('sin(')">sin</button>
+        <button class="calc-btn" onclick="insertFunction('cos(')">cos</button>
+        <button class="calc-btn" onclick="insertFunction('tan(')">tan</button>
+        <button class="calc-btn" onclick="insertFunction('log(')">log</button>
+        <button class="calc-btn" onclick="insertFunction('ln(')">ln</button>
+
+        <button class="calc-btn" onclick="insertFunction('(')">(</button>
+        <button class="calc-btn" onclick="insertFunction(')')">)</button>
+        <button class="calc-btn" onclick="insertFunction('π')">π</button>
+        <button class="calc-btn" onclick="insertFunction('e')">e</button>
+        <button class="calc-btn" onclick="insertFunction('%')">%</button>
+
+        <!-- Numbers / operators -->
+        <button class="calc-btn" onclick="insertValue('7')">7</button>
+        <button class="calc-btn" onclick="insertValue('8')">8</button>
+        <button class="calc-btn" onclick="insertValue('9')">9</button>
+        <button class="calc-btn" onclick="insertFunction('/')">÷</button>
+        <button class="calc-btn" onclick="insertFunction('*')">×</button>
+
+        <button class="calc-btn" onclick="insertValue('4')">4</button>
+        <button class="calc-btn" onclick="insertValue('5')">5</button>
+        <button class="calc-btn" onclick="insertValue('6')">6</button>
+        <button class="calc-btn" onclick="insertFunction('-')">−</button>
+        <button class="calc-btn" onclick="insertFunction('+')">+</button>
+
+        <button class="calc-btn" onclick="insertValue('1')">1</button>
+        <button class="calc-btn" onclick="insertValue('2')">2</button>
+        <button class="calc-btn" onclick="insertValue('3')">3</button>
+        <button class="calc-btn" onclick="toggleSign()">±</button>
+        <button class="calc-btn" onclick="insertValue('0')">0</button>
+
+        <button class="calc-btn" onclick="insertValue('.')">.</button>
+        <button class="calc-btn" onclick="insertFunction('^2')">x²</button>
+        <button class="calc-btn" style="background:#34c759;color:white;" onclick="calculateExpression()">=</button>
+      </div>
+
+      <div class="result" id="virtualMathResult"></div>
+    </div>
+
+    <!-- Chemistry Section -->
+    <div id="chemistry" class="calculator-section">
+      <h2>Chemistry Module</h2>
+      <div class="periodic-wrapper">
+        <div class="periodic-table" id="periodic-table"></div>
+      </div>
+      <div class="chemistry-tool">
+        <label>Select a Function:</label>
+        <select id="chemistryFunction" onchange="loadChemistryTool()">
+          <option value="molecularWeight">Molecular Weight</option>
+          <option value="gasLaws">Gas Laws</option>
+        </select>
+        <div id="chemistryToolContainer"></div>
+      </div>
+    </div>
+
+    <!-- Unit Converter Section -->
+    <div id="unitConverter" class="calculator-section">
+      <h2>Unit Converter</h2>
+      <label>Select Unit Type:</label>
+      <select id="unitType" onchange="updateUnits()">
+        <option value="mass">Mass</option>
+        <option value="length">Length</option>
+        <option value="area">Area</option>
+        <option value="volume">Volume</option>
+        <option value="temperature">Temperature</option>
+        <option value="pressure">Pressure</option>
+        <option value="power">Power</option>
+        <option value="time">Time</option>
+      </select>
+
+      <div style="margin: 10px 0;">
+        <label>From Unit:</label>
+        <select id="fromUnit"></select>
+
+        <label>To Unit:</label>
+        <select id="toUnit"></select>
+      </div>
+
+      <input type="number" id="valueToConvert" placeholder="Enter value" style="width: 200px;" />
+      <button onclick="convertUnits()">Convert</button>
+      <div class="result" id="unitResult"></div>
+    </div>
+
+    <!-- Dilution & Concentration Section -->
+    <div id="dilutionCalculator" class="calculator-section">
+      <h2>Dilution & Concentration</h2>
+
+      <!-- Conversion card -->
+      <div class="card">
+        <div class="card-title">
+          <i>↔</i>
+          <span>Convert Between All Units</span>
+        </div>
+        <div class="input-group">
+          <label for="concInputValue">Enter Value</label>
+          <input type="number" id="concInputValue" placeholder="Enter concentration value" step="any">
+        </div>
+        <div class="input-group">
+          <label for="concFromUnit">Unit</label>
+          <select id="concFromUnit">
+            <option value="ppm">ppm</option>
+            <option value="mg/L">mg/L</option>
+            <option value="mg/mL">mg/mL</option>
+            <option value="μg/L">μg/L</option>
+            <option value="μg/mL">μg/mL</option>
+          </select>
+        </div>
+        <button class="btn" onclick="runConcConversion()">Convert to All Units</button>
+        <div class="result-box" id="conversionResultBox">
+          <div class="result-title">All Unit Conversions</div>
+          <div class="units-grid" id="allUnitsGrid"></div>
+        </div>
+      </div>
+
+      <!-- Serial dilution card -->
+      <div class="card">
+        <div class="card-title">
+          <i>🔬</i>
+          <span>Serial Dilution Calculator</span>
+        </div>
+
+        <div id="serialSteps"></div>
+
+        <div class="add-step" id="addStepBtnDil">
+          <span>+</span> Add Dilution Step
+        </div>
+
+        <button class="btn" onclick="calculateSerialDilution()">Calculate Serial Dilution</button>
+
+        <div class="result-box" id="serialResultBox">
+          <div class="result-title">Dilution Results</div>
+          <div id="serialResultsContainer"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Created by: Mr. Ganesh Raykar</p>
+  </footer>
+
+  <script>
+    // Show section
+    function showSection(id) {
+      document.querySelectorAll('.calculator-section').forEach(section => {
+        section.classList.remove('active');
+      });
+      document.getElementById(id).classList.add('active');
+    }
+
+    // === Scientific Calculator (with DEG/RAD) ===
+    let calcDisplay = document.getElementById("calcDisplay");
+    let calcSubDisplay = document.getElementById("calcSubDisplay");
+    let currentExpr = "";
+    let angleMode = "DEG"; // DEG by default
+
+    function updateDisplays() {
+      calcDisplay.innerText = currentExpr || "0";
+    }
+
+    function insertValue(val) {
+      if (calcDisplay.innerText === "0" || calcDisplay.innerText === "Error") {
+        currentExpr = val;
+      } else {
+        currentExpr += val;
+      }
+      updateDisplays();
+    }
+
+    function insertFunction(val) {
+      if (calcDisplay.innerText === "Error") {
+        currentExpr = "";
+      }
+      currentExpr += val;
+      updateDisplays();
+    }
+
+    function clearDisplay() {
+      currentExpr = "";
+      calcSubDisplay.innerText = "";
+      updateDisplays();
+      document.getElementById("virtualMathResult").innerText = "";
+    }
+
+    function deleteLast() {
+      if (calcDisplay.innerText === "Error") {
+        clearDisplay();
+        return;
+      }
+      currentExpr = currentExpr.slice(0, -1);
+      updateDisplays();
+    }
+
+    function toggleSign() {
+      if (!currentExpr) return;
+      const match = currentExpr.match(/(-?\d*\.?\d+)(?!.*\d)/);
+      if (!match) return;
+      const num = match[1];
+      const start = match.index;
+      const before = currentExpr.slice(0, start);
+      const after = currentExpr.slice(start + num.length);
+      const toggled = num.startsWith("-") ? num.slice(1) : "-" + num;
+      currentExpr = before + toggled + after;
+      updateDisplays();
+    }
+
+    function toggleAngleMode() {
+      angleMode = angleMode === "DEG" ? "RAD" : "DEG";
+      document.getElementById("angleModeBtn").innerText = angleMode;
+    }
+
+    function preprocessExpression(expr) {
+      calcSubDisplay.innerText = expr + " =";
+      let processed = expr;
+
+      // powers
+      processed = processed.replace(/(\d+(\.\d+)?|\))\^2/g, "Math.pow($1,2)");
+      processed = processed.replace(/(\d+(\.\d+)?|\))\^(\d+(\.\d+)?)/g, "Math.pow($1,$3)");
+
+      processed = processed
+        .replace(/π/g, "Math.PI")
+        .replace(/e/g, "Math.E")
+        .replace(/log/g, "Math.log10")
+        .replace(/ln/g, "Math.log")
+        .replace(/sqrt/g, "Math.sqrt");
+
+      // percent
+      processed = processed.replace(/(\d+(\.\d+)?)%/g, "($1/100)");
+
+      // trig
+      if (angleMode === "DEG") {
+        processed = processed
+          .replace(/sin\(/g, "dsin(")
+          .replace(/cos\(/g, "dcos(")
+          .replace(/tan\(/g, "dtan(");
+      } else {
+        processed = processed
+          .replace(/sin\(/g, "Math.sin(")
+          .replace(/cos\(/g, "Math.cos(")
+          .replace(/tan\(/g, "Math.tan(");
+      }
+
+      return processed;
+    }
+
+    function calculateExpression() {
+      try {
+        let expr = currentExpr || calcDisplay.innerText;
+        if (!expr) return;
+
+        expr = expr.replace(/×/g, "*").replace(/÷/g, "/");
+
+        const jsExpr = preprocessExpression(expr);
+
+        // degree trig helpers
+        function dsin(x) { return Math.sin(x * Math.PI / 180); }
+        function dcos(x) { return Math.cos(x * Math.PI / 180); }
+        function dtan(x) { return Math.tan(x * Math.PI / 180); }
+
+        const result = eval(jsExpr);
+        if (!isFinite(result)) throw new Error("Invalid result");
+
+        const displayResult = Number.isInteger(result)
+          ? result
+          : parseFloat(result.toFixed(6));
+
+        currentExpr = displayResult.toString();
+        updateDisplays();
+        document.getElementById("virtualMathResult").innerText = "Result: " + displayResult;
+      } catch (e) {
+        calcDisplay.innerText = "Error";
+        calcSubDisplay.innerText = "";
+        currentExpr = "";
+        document.getElementById("virtualMathResult").innerText =
+          "Calculation error: " + e.message;
+      }
+    }
+
+    // === Periodic Table Data ===
+    const elements = [
+      // Period 1
+      {num: 1, sym: 'H', name: 'Hydrogen', weight: 1.008, category: 'nonmetal', x: 1, y: 1},
+      {num: 2, sym: 'He', name: 'Helium', weight: 4.0026, category: 'noble-gas', x: 18, y: 1},
+
+      // Period 2
+      {num: 3, sym: 'Li', name: 'Lithium', weight: 6.94, category: 'alkali', x: 1, y: 2},
+      {num: 4, sym: 'Be', name: 'Beryllium', weight: 9.0122, category: 'alkaline-earth', x: 2, y: 2},
+      {num: 5, sym: 'B', name: 'Boron', weight: 10.81, category: 'metalloid', x: 13, y: 2},
+      {num: 6, sym: 'C', name: 'Carbon', weight: 12.011, category: 'nonmetal', x: 14, y: 2},
+      {num: 7, sym: 'N', name: 'Nitrogen', weight: 14.007, category: 'nonmetal', x: 15, y: 2},
+      {num: 8, sym: 'O', name: 'Oxygen', weight: 15.999, category: 'nonmetal', x: 16, y: 2},
+      {num: 9, sym: 'F', name: 'Fluorine', weight: 18.998, category: 'halogen', x: 17, y: 2},
+      {num: 10, sym: 'Ne', name: 'Neon', weight: 20.180, category: 'noble-gas', x: 18, y: 2},
+
+      // Period 3
+      {num: 11, sym: 'Na', name: 'Sodium', weight: 22.990, category: 'alkali', x: 1, y: 3},
+      {num: 12, sym: 'Mg', name: 'Magnesium', weight: 24.305, category: 'alkaline-earth', x: 2, y: 3},
+      {num: 13, sym: 'Al', name: 'Aluminum', weight: 26.982, category: 'post-transition', x: 13, y: 3},
+      {num: 14, sym: 'Si', name: 'Silicon', weight: 28.085, category: 'metalloid', x: 14, y: 3},
+      {num: 15, sym: 'P', name: 'Phosphorus', weight: 30.974, category: 'nonmetal', x: 15, y: 3},
+      {num: 16, sym: 'S', name: 'Sulfur', weight: 32.06, category: 'nonmetal', x: 16, y: 3},
+      {num: 17, sym: 'Cl', name: 'Chlorine', weight: 35.45, category: 'halogen', x: 17, y: 3},
+      {num: 18, sym: 'Ar', name: 'Argon', weight: 39.948, category: 'noble-gas', x: 18, y: 3},
+
+      // Period 4
+      {num: 19, sym: 'K', name: 'Potassium', weight: 39.098, category: 'alkali', x: 1, y: 4},
+      {num: 20, sym: 'Ca', name: 'Calcium', weight: 40.078, category: 'alkaline-earth', x: 2, y: 4},
+      {num: 21, sym: 'Sc', name: 'Scandium', weight: 44.956, category: 'transition', x: 3, y: 4},
+      {num: 22, sym: 'Ti', name: 'Titanium', weight: 47.867, category: 'transition', x: 4, y: 4},
+      {num: 23, sym: 'V', name: 'Vanadium', weight: 50.942, category: 'transition', x: 5, y: 4},
+      {num: 24, sym: 'Cr', name: 'Chromium', weight: 51.996, category: 'transition', x: 6, y: 4},
+      {num: 25, sym: 'Mn', name: 'Manganese', weight: 54.938, category: 'transition', x: 7, y: 4},
+      {num: 26, sym: 'Fe', name: 'Iron', weight: 55.845, category: 'transition', x: 8, y: 4},
+      {num: 27, sym: 'Co', name: 'Cobalt', weight: 58.933, category: 'transition', x: 9, y: 4},
+      {num: 28, sym: 'Ni', name: 'Nickel', weight: 58.693, category: 'transition', x: 10, y: 4},
+      {num: 29, sym: 'Cu', name: 'Copper', weight: 63.546, category: 'transition', x: 11, y: 4},
+      {num: 30, sym: 'Zn', name: 'Zinc', weight: 65.38, category: 'transition', x: 12, y: 4},
+      {num: 31, sym: 'Ga', name: 'Gallium', weight: 69.723, category: 'post-transition', x: 13, y: 4},
+      {num: 32, sym: 'Ge', name: 'Germanium', weight: 72.630, category: 'metalloid', x: 14, y: 4},
+      {num: 33, sym: 'As', name: 'Arsenic', weight: 74.922, category: 'metalloid', x: 15, y: 4},
+      {num: 34, sym: 'Se', name: 'Selenium', weight: 78.971, category: 'nonmetal', x: 16, y: 4},
+      {num: 35, sym: 'Br', name: 'Bromine', weight: 79.904, category: 'halogen', x: 17, y: 4},
+      {num: 36, sym: 'Kr', name: 'Krypton', weight: 83.798, category: 'noble-gas', x: 18, y: 4},
+
+      // Period 5
+      {num: 37, sym: 'Rb', name: 'Rubidium', weight: 85.468, category: 'alkali', x: 1, y: 5},
+      {num: 38, sym: 'Sr', name: 'Strontium', weight: 87.62, category: 'alkaline-earth', x: 2, y: 5},
+      {num: 39, sym: 'Y', name: 'Yttrium', weight: 88.906, category: 'transition', x: 3, y: 5},
+      {num: 40, sym: 'Zr', name: 'Zirconium', weight: 91.224, category: 'transition', x: 4, y: 5},
+      {num: 41, sym: 'Nb', name: 'Niobium', weight: 92.906, category: 'transition', x: 5, y: 5},
+      {num: 42, sym: 'Mo', name: 'Molybdenum', weight: 95.95, category: 'transition', x: 6, y: 5},
+      {num: 43, sym: 'Tc', name: 'Technetium', weight: 98, category: 'transition', x: 7, y: 5},
+      {num: 44, sym: 'Ru', name: 'Ruthenium', weight: 101.07, category: 'transition', x: 8, y: 5},
+      {num: 45, sym: 'Rh', name: 'Rhodium', weight: 102.91, category: 'transition', x: 9, y: 5},
+      {num: 46, sym: 'Pd', name: 'Palladium', weight: 106.42, category: 'transition', x: 10, y: 5},
+      {num: 47, sym: 'Ag', name: 'Silver', weight: 107.87, category: 'transition', x: 11, y: 5},
+      {num: 48, sym: 'Cd', name: 'Cadmium', weight: 112.41, category: 'transition', x: 12, y: 5},
+      {num: 49, sym: 'In', name: 'Indium', weight: 114.82, category: 'post-transition', x: 13, y: 5},
+      {num: 50, sym: 'Sn', name: 'Tin', weight: 118.71, category: 'post-transition', x: 14, y: 5},
+      {num: 51, sym: 'Sb', name: 'Antimony', weight: 121.76, category: 'metalloid', x: 15, y: 5},
+      {num: 52, sym: 'Te', name: 'Tellurium', weight: 127.60, category: 'metalloid', x: 16, y: 5},
+      {num: 53, sym: 'I', name: 'Iodine', weight: 126.90, category: 'halogen', x: 17, y: 5},
+      {num: 54, sym: 'Xe', name: 'Xenon', weight: 131.29, category: 'noble-gas', x: 18, y: 5},
+
+      // Period 6
+      {num: 55, sym: 'Cs', name: 'Cesium', weight: 132.91, category: 'alkali', x: 1, y: 6},
+      {num: 56, sym: 'Ba', name: 'Barium', weight: 137.33, category: 'alkaline-earth', x: 2, y: 6},
+      {num: 57, sym: 'La', name: 'Lanthanum', weight: 138.91, category: 'lanthanide', x: 3, y: 8},
+      {num: 72, sym: 'Hf', name: 'Hafnium', weight: 178.49, category: 'transition', x: 4, y: 6},
+      {num: 73, sym: 'Ta', name: 'Tantalum', weight: 180.95, category: 'transition', x: 5, y: 6},
+      {num: 74, sym: 'W', name: 'Tungsten', weight: 183.84, category: 'transition', x: 6, y: 6},
+      {num: 75, sym: 'Re', name: 'Rhenium', weight: 186.21, category: 'transition', x: 7, y: 6},
+      {num: 76, sym: 'Os', name: 'Osmium', weight: 190.23, category: 'transition', x: 8, y: 6},
+      {num: 77, sym: 'Ir', name: 'Iridium', weight: 192.22, category: 'transition', x: 9, y: 6},
+      {num: 78, sym: 'Pt', name: 'Platinum', weight: 195.08, category: 'transition', x: 10, y: 6},
+      {num: 79, sym: 'Au', name: 'Gold', weight: 196.97, category: 'transition', x: 11, y: 6},
+      {num: 80, sym: 'Hg', name: 'Mercury', weight: 200.59, category: 'transition', x: 12, y: 6},
+      {num: 81, sym: 'Tl', name: 'Thallium', weight: 204.38, category: 'post-transition', x: 13, y: 6},
+      {num: 82, sym: 'Pb', name: 'Lead', weight: 207.2, category: 'post-transition', x: 14, y: 6},
+      {num: 83, sym: 'Bi', name: 'Bismuth', weight: 208.98, category: 'post-transition', x: 15, y: 6},
+      {num: 84, sym: 'Po', name: 'Polonium', weight: 209, category: 'post-transition', x: 16, y: 6},
+      {num: 85, sym: 'At', name: 'Astatine', weight: 210, category: 'halogen', x: 17, y: 6},
+      {num: 86, sym: 'Rn', name: 'Radon', weight: 222, category: 'noble-gas', x: 18, y: 6},
+
+      // Period 7
+      {num: 87, sym: 'Fr', name: 'Francium', weight: 223, category: 'alkali', x: 1, y: 7},
+      {num: 88, sym: 'Ra', name: 'Radium', weight: 226, category: 'alkaline-earth', x: 2, y: 7},
+      {num: 89, sym: 'Ac', name: 'Actinium', weight: 227, category: 'actinide', x: 3, y: 9},
+      {num: 104, sym: 'Rf', name: 'Rutherfordium', weight: 267, category: 'transition', x: 4, y: 7},
+      {num: 105, sym: 'Db', name: 'Dubnium', weight: 268, category: 'transition', x: 5, y: 7},
+      {num: 106, sym: 'Sg', name: 'Seaborgium', weight: 269, category: 'transition', x: 6, y: 7},
+      {num: 107, sym: 'Bh', name: 'Bohrium', weight: 270, category: 'transition', x: 7, y: 7},
+      {num: 108, sym: 'Hs', name: 'Hassium', weight: 269, category: 'transition', x: 8, y: 7},
+      {num: 109, sym: 'Mt', name: 'Meitnerium', weight: 278, category: 'transition', x: 9, y: 7},
+      {num: 110, sym: 'Ds', name: 'Darmstadtium', weight: 281, category: 'transition', x: 10, y: 7},
+      {num: 111, sym: 'Rg', name: 'Roentgenium', weight: 282, category: 'transition', x: 11, y: 7},
+      {num: 112, sym: 'Cn', name: 'Copernicium', weight: 285, category: 'transition', x: 12, y: 7},
+      {num: 113, sym: 'Nh', name: 'Nihonium', weight: 286, category: 'post-transition', x: 13, y: 7},
+      {num: 114, sym: 'Fl', name: 'Flerovium', weight: 289, category: 'post-transition', x: 14, y: 7},
+      {num: 115, sym: 'Mc', name: 'Moscovium', weight: 290, category: 'post-transition', x: 15, y: 7},
+      {num: 116, sym: 'Lv', name: 'Livermorium', weight: 293, category: 'post-transition', x: 16, y: 7},
+      {num: 117, sym: 'Ts', name: 'Tennessine', weight: 294, category: 'halogen', x: 17, y: 7},
+      {num: 118, sym: 'Og', name: 'Oganesson', weight: 294, category: 'noble-gas', x: 18, y: 7},
+
+      // Lanthanides (Period 8)
+      {num: 58, sym: 'Ce', name: 'Cerium', weight: 140.12, category: 'lanthanide', x: 4, y: 8},
+      {num: 59, sym: 'Pr', name: 'Praseodymium', weight: 140.91, category: 'lanthanide', x: 5, y: 8},
+      {num: 60, sym: 'Nd', name: 'Neodymium', weight: 144.24, category: 'lanthanide', x: 6, y: 8},
+      {num: 61, sym: 'Pm', name: 'Promethium', weight: 145, category: 'lanthanide', x: 7, y: 8},
+      {num: 62, sym: 'Sm', name: 'Samarium', weight: 150.36, category: 'lanthanide', x: 8, y: 8},
+      {num: 63, sym: 'Eu', name: 'Europium', weight: 151.96, category: 'lanthanide', x: 9, y: 8},
+      {num: 64, sym: 'Gd', name: 'Gadolinium', weight: 157.25, category: 'lanthanide', x: 10, y: 8},
+      {num: 65, sym: 'Tb', name: 'Terbium', weight: 158.93, category: 'lanthanide', x: 11, y: 8},
+      {num: 66, sym: 'Dy', name: 'Dysprosium', weight: 162.50, category: 'lanthanide', x: 12, y: 8},
+      {num: 67, sym: 'Ho', name: 'Holmium', weight: 164.93, category: 'lanthanide', x: 13, y: 8},
+      {num: 68, sym: 'Er', name: 'Erbium', weight: 167.26, category: 'lanthanide', x: 14, y: 8},
+      {num: 69, sym: 'Tm', name: 'Thulium', weight: 168.93, category: 'lanthanide', x: 15, y: 8},
+      {num: 70, sym: 'Yb', name: 'Ytterbium', weight: 173.05, category: 'lanthanide', x: 16, y: 8},
+      {num: 71, sym: 'Lu', name: 'Lutetium', weight: 174.97, category: 'lanthanide', x: 17, y: 8},
+
+      // Actinides (Period 9)
+      {num: 90, sym: 'Th', name: 'Thorium', weight: 232.04, category: 'actinide', x: 4, y: 9},
+      {num: 91, sym: 'Pa', name: 'Protactinium', weight: 231.04, category: 'actinide', x: 5, y: 9},
+      {num: 92, sym: 'U', name: 'Uranium', weight: 238.03, category: 'actinide', x: 6, y: 9},
+      {num: 93, sym: 'Np', name: 'Neptunium', weight: 237, category: 'actinide', x: 7, y: 9},
+      {num: 94, sym: 'Pu', name: 'Plutonium', weight: 244, category: 'actinide', x: 8, y: 9},
+      {num: 95, sym: 'Am', name: 'Americium', weight: 243, category: 'actinide', x: 9, y: 9},
+      {num: 96, sym: 'Cm', name: 'Curium', weight: 247, category: 'actinide', x: 10, y: 9},
+      {num: 97, sym: 'Bk', name: 'Berkelium', weight: 247, category: 'actinide', x: 11, y: 9},
+      {num: 98, sym: 'Cf', name: 'Californium', weight: 251, category: 'actinide', x: 12, y: 9},
+      {num: 99, sym: 'Es', name: 'Einsteinium', weight: 252, category: 'actinide', x: 13, y: 9},
+      {num: 100, sym: 'Fm', name: 'Fermium', weight: 257, category: 'actinide', x: 14, y: 9},
+      {num: 101, sym: 'Md', name: 'Mendelevium', weight: 258, category: 'actinide', x: 15, y: 9},
+      {num: 102, sym: 'No', name: 'Nobelium', weight: 259, category: 'actinide', x: 16, y: 9},
+      {num: 103, sym: 'Lr', name: 'Lawrencium', weight: 262, category: 'actinide', x: 17, y: 9}
+    ];
+
+    const table = document.getElementById('periodic-table');
+    elements.forEach(element => {
+      const div = document.createElement('div');
+      div.className = `element ${element.category}`;
+      div.style.gridColumn = element.x;
+      div.style.gridRow = element.y;
+      div.innerHTML = `
+        <div class="number">${element.num}</div>
+        <div class="symbol">${element.sym}</div>
+        <div class="weight">${element.weight}</div>
+      `;
+      div.title = `${element.name}\nAtomic Weight: ${element.weight}`;
+      table.appendChild(div);
+    });
+
+    // Chemistry Tools
+    function loadChemistryTool() {
+      const tool = document.getElementById("chemistryFunction").value;
+      const container = document.getElementById("chemistryToolContainer");
+      container.innerHTML = "";
+      if (tool === "molecularWeight") {
+        container.innerHTML = `
+          <h3>Molecular Weight Calculator</h3>
+          <input type="text" id="formulaW" placeholder="Enter formula (e.g., H2O)">
+          <button onclick="calculateMolecularWeight()">Calculate</button>
+          <div class="result" id="molecularWeightResult"></div>
+        `;
+      } else if (tool === "gasLaws") {
+        container.innerHTML = `
+          <h3>Gas Laws Calculator</h3>
+          <select id="gasLawSelect" onchange="updateGasLawFields()">
+            <option value="boyle">Boyle's Law</option>
+            <option value="charles">Charles's Law</option>
+            <option value="ideal">Ideal Gas Law</option>
+          </select>
+          <div id="gasLawInputs"></div>
+          <div class="result" id="gasLawResult"></div>
+        `;
+        updateGasLawFields();
+      }
+    }
+
+    function calculateMolecularWeight() {
+      const formula = document.getElementById('formulaW').value.trim();
+      const resultDiv = document.getElementById('molecularWeightResult');
+      const atomicWeights = {
+        H: 1.008, He: 4.0026, Li: 6.94, Be: 9.0122, B: 10.81,
+        C: 12.011, N: 14.007, O: 15.999, F: 18.998, Ne: 20.180,
+        Na: 22.990, Mg: 24.305, Al: 26.982, Si: 28.085, P: 30.974,
+        S: 32.06, Cl: 35.45, Ar: 39.948, K: 39.098, Ca: 40.078
+      };
+
+      const regex = /([A-Z][a-z]?)(\d*)/g;
+      let match;
+      let total = 0;
+
+      while ((match = regex.exec(formula)) !== null) {
+        const elem = match[1];
+        const count = match[2] ? parseInt(match[2]) : 1;
+        const weight = atomicWeights[elem] || 0;
+        total += weight * count;
+      }
+
+      resultDiv.innerText = `Molecular Weight: ${total.toFixed(2)} g/mol`;
+    }
+
+    function updateGasLawFields() {
+      const law = document.getElementById('gasLawSelect').value;
+      const inputsDiv = document.getElementById('gasLawInputs');
+      inputsDiv.innerHTML = '';
+      if (law === 'boyle') {
+        inputsDiv.innerHTML = `
+          <div>
+            <input type="number" id="p1" placeholder="P1 (atm)">
+            <input type="number" id="v1" placeholder="V1 (L)">
+            <input type="number" id="p2" placeholder="P2 (atm)">
+            <input type="number" id="v2" placeholder="V2 (L)">
+          </div>
+          <button onclick="calculateBoyle()">Calculate</button>`;
+      } else if (law === 'charles') {
+        inputsDiv.innerHTML = `
+          <div>
+            <input type="number" id="v1" placeholder="V1 (L)">
+            <input type="number" id="t1" placeholder="T1 (K)">
+            <input type="number" id="v2" placeholder="V2 (L)">
+            <input type="number" id="t2" placeholder="T2 (K)">
+          </div>
+          <button onclick="calculateCharles()">Calculate</button>`;
+      } else if (law === 'ideal') {
+        inputsDiv.innerHTML = `
+          <div>
+            <input type="number" id="p" placeholder="P (atm)">
+            <input type="number" id="v" placeholder="V (L)">
+            <input type="number" id="n" placeholder="n (mol)">
+            <input type="number" id="t" placeholder="T (K)">
+          </div>
+          <button onclick="calculateIdeal()">Calculate</button>`;
+      }
+    }
+
+    function calculateBoyle() {
+      const p1 = parseFloat(document.getElementById('p1').value);
+      const v1 = parseFloat(document.getElementById('v1').value);
+      const p2 = parseFloat(document.getElementById('p2').value);
+      const v2 = parseFloat(document.getElementById('v2').value);
+      const res = document.getElementById('gasLawResult');
+      if (!isNaN(p1) && !isNaN(v1) && !isNaN(p2) && isNaN(v2)) {
+        res.innerText = `V2 = ${(p1 * v1 / p2).toFixed(2)} L`;
+      } else if (!isNaN(p1) && !isNaN(v1) && isNaN(p2) && !isNaN(v2)) {
+        res.innerText = `P2 = ${(p1 * v1 / v2).toFixed(2)} atm`;
+      } else {
+        res.innerText = `Please enter valid values.`;
+      }
+    }
+
+    function calculateCharles() {
+      const v1 = parseFloat(document.getElementById('v1').value);
+      const t1 = parseFloat(document.getElementById('t1').value);
+      const v2 = parseFloat(document.getElementById('v2').value);
+      const t2 = parseFloat(document.getElementById('t2').value);
+      const res = document.getElementById('gasLawResult');
+      if (!isNaN(v1) && !isNaN(t1) && !isNaN(v2) && isNaN(t2)) {
+        res.innerText = `T2 = ${(v2 * t1 / v1).toFixed(2)} K`;
+      } else if (!isNaN(v1) && !isNaN(t1) && isNaN(v2) && !isNaN(t2)) {
+        res.innerText = `V2 = ${(v1 * t2 / t1).toFixed(2)} L`;
+      } else {
+        res.innerText = `Please enter valid values.`;
+      }
+    }
+
+    function calculateIdeal() {
+      const p = parseFloat(document.getElementById('p').value);
+      const v = parseFloat(document.getElementById('v').value);
+      const n = parseFloat(document.getElementById('n').value);
+      const t = parseFloat(document.getElementById('t').value);
+      const r = 0.0821;
+      const res = document.getElementById('gasLawResult');
+      if (!isNaN(p) && !isNaN(v) && !isNaN(n) && !isNaN(t)) {
+        const pv = p * v;
+        const nrt = n * r * t;
+        res.innerText = `PV = ${pv.toFixed(2)}, nRT = ${nrt.toFixed(2)}, Ideal? ${Math.abs(pv - nrt) < 0.1}`;
+      } else {
+        res.innerText = "Enter all values to calculate ideal gas law.";
+      }
+    }
+
+    // Available unit types and units
+    const unitOptions = {
+      mass: ["kg", "g", "mg", "lb", "oz"],
+      length: ["km", "m", "cm", "mm", "mi", "yd", "ft", "in"],
+      area: ["km²", "m²", "cm²", "acre", "hectare"],
+      volume: ["L", "mL", "gal", "qt", "pt", "fl oz"],
+      temperature: ["°C", "°F", "K"],
+      pressure: ["Pa", "kPa", "MPa", "bar", "atm", "psi"],
+      power: ["W", "kW", "MW", "HP"],
+      time: ["s", "min", "hr", "day", "week", "month", "year"]
+    };
+
+    // Generic linear conversion factors relative to a base unit per dimension.
+    const conversionFactors = {
+      // mass (base: kg)
+      kg: 1,
+      g: 0.001,
+      mg: 0.000001,
+      lb: 0.453592,
+      oz: 0.0283495,
+
+      // length (base: m)
+      km: 1000,
+      m: 1,
+      cm: 0.01,
+      mm: 0.001,
+      mi: 1609.34,
+      yd: 0.9144,
+      ft: 0.3048,
+      in: 0.0254,
+
+      // area (base: m²)
+      "km²": 1000000,
+      "m²": 1,
+      "cm²": 0.0001,
+      acre: 4046.86,
+      hectare: 10000,
+
+      // volume (base: L)
+      L: 1,
+      mL: 0.001,
+      gal: 3.78541,
+      qt: 0.946353,
+      pt: 0.473176,
+      "fl oz": 0.0295735,
+
+      // pressure (base: Pa)
+      Pa: 1,
+      kPa: 1000,
+      MPa: 1000000,
+      bar: 100000,
+      atm: 101325,
+      psi: 6894.76,
+
+      // power (base: W)
+      W: 1,
+      kW: 1000,
+      MW: 1000000,
+      HP: 745.7,
+
+      // time (base: s)
+      s: 1,
+      min: 60,
+      hr: 3600,
+      day: 86400,
+      week: 604800,
+      month: 2592000,
+      year: 31536000
+    };
+
+    // Populate unit dropdowns when type changes
+    function updateUnits() {
+      const type = document.getElementById("unitType").value;
+      const fromUnitSelect = document.getElementById("fromUnit");
+      const toUnitSelect = document.getElementById("toUnit");
+
+      fromUnitSelect.innerHTML = "";
+      toUnitSelect.innerHTML = "";
+
+      unitOptions[type].forEach(unit => {
+        const opt1 = document.createElement("option");
+        opt1.value = unit;
+        opt1.textContent = unit;
+        fromUnitSelect.appendChild(opt1);
+
+        const opt2 = document.createElement("option");
+        opt2.value = unit;
+        opt2.textContent = unit;
+        toUnitSelect.appendChild(opt2);
+      });
+    }
+
+    // Temperature conversion helper
+    function convertTemperature(value, from, to) {
+      if (from === to) return value;
+
+      let celsius;
+
+      if (from === "°C") {
+        celsius = value;
+      } else if (from === "K") {
+        celsius = value - 273.15;
+      } else if (from === "°F") {
+        celsius = (value - 32) * 5 / 9;
+      } else {
+        throw new Error("Unsupported temperature unit: " + from);
+      }
+
+      if (to === "°C") {
+        return celsius;
+      } else if (to === "K") {
+        return celsius + 273.15;
+      } else if (to === "°F") {
+        return celsius * 9 / 5 + 32;
+      } else {
+        throw new Error("Unsupported temperature unit: " + to);
+      }
+    }
+
+    // Main converter
+    function convertUnits() {
+      const from = document.getElementById("fromUnit").value;
+      const to = document.getElementById("toUnit").value;
+      const value = parseFloat(document.getElementById("valueToConvert").value);
+
+      if (isNaN(value)) {
+        document.getElementById("unitResult").innerText = "Enter a valid value.";
+        return;
+      }
+
+      let result;
+
+      if ((from === "°C" || from === "°F" || from === "K") &&
+          (to === "°C" || to === "°F" || to === "K")) {
+
+        try {
+          result = convertTemperature(value, from, to);
+        } catch (e) {
+          document.getElementById("unitResult").innerText = e.message;
+          return;
+        }
+
+      } else {
+        if (conversionFactors[from] === undefined || conversionFactors[to] === undefined) {
+          document.getElementById("unitResult").innerText =
+            "Conversion not defined for selected units.";
+          return;
+        }
+
+        result = value * (conversionFactors[from] / conversionFactors[to]);
+      }
+
+      document.getElementById("unitResult").innerText =
+        `${value} ${from} = ${result.toFixed(4)} ${to}`;
+    }
+
+    // Concentration conversion helpers for dilution
+    const concConvFactors = {
+      "ppm":   1,
+      "mg/L":  1,
+      "mg/mL": 1000,
+      "μg/L":  0.001,
+      "μg/mL": 1
+    };
+
+    const unitLabels = {
+      "ppm":   "ppm",
+      "mg/L":  "mg/L",
+      "mg/mL": "mg/mL",
+      "μg/L":  "μg/L",
+      "μg/mL": "μg/mL"
+    };
+
+    function convertConc(value, from, to) {
+      return value * (concConvFactors[from] / concConvFactors[to]);
+    }
+
+    function formatNumber(num) {
+      if (Math.abs(num) >= 1000000 || (Math.abs(num) > 0 && Math.abs(num) < 0.001)) {
+        return num.toExponential(3);
+      }
+      return parseFloat(num.toFixed(4));
+    }
+
+    function runConcConversion() {
+      const value = parseFloat(document.getElementById("concInputValue").value);
+      const from = document.getElementById("concFromUnit").value;
+      const box = document.getElementById("conversionResultBox");
+      const grid = document.getElementById("allUnitsGrid");
+
+      if (isNaN(value)) {
+        box.classList.remove("show");
+        alert("Please enter a valid concentration value.");
+        return;
+      }
+
+      grid.innerHTML = "";
+
+      for (const u in concConvFactors) {
+        const convertedValue = convertConc(value, from, u);
+        const card = document.createElement("div");
+        card.className = "unit-card";
+        card.innerHTML = `
+          <div class="unit-name">${unitLabels[u]}</div>
+          <div class="unit-value">${formatNumber(convertedValue)}</div>
+        `;
+        grid.appendChild(card);
+      }
+
+      box.classList.add("show");
+    }
+
+    // Serial dilution
+    let serialStepCount = 0;
+    const serialMaxSteps = 5;
+
+    function addSerialStep(initialConc = '', initialUnit = 'ppm') {
+      if (serialStepCount >= serialMaxSteps) {
+        alert(`Maximum ${serialMaxSteps} steps allowed`);
+        return;
+      }
+
+      serialStepCount++;
+      const stepId = `step${serialStepCount}`;
+      const stepDiv = document.createElement('div');
+      stepDiv.className = 'step';
+      stepDiv.id = stepId;
+
+      const isFirst = serialStepCount === 1;
+
+      stepDiv.innerHTML = `
+        <div class="step-header">
+          <div class="step-number">${serialStepCount}</div>
+          <div><strong>Dilution Step ${serialStepCount}</strong></div>
+        </div>
+        <div class="step-inputs">
+          ${
+            isFirst
+            ? `
+              <div class="input-group">
+                <label>Initial Concentration</label>
+                <input type="number" class="initial-conc" placeholder="Concentration" step="any" value="${initialConc}">
+              </div>
+              <div class="input-group">
+                <label>Unit</label>
+                <select class="initial-unit">
+                  <option value="ppm" ${initialUnit === 'ppm' ? 'selected' : ''}>ppm</option>
+                  <option value="mg/L" ${initialUnit === 'mg/L' ? 'selected' : ''}>mg/L</option>
+                  <option value="mg/mL" ${initialUnit === 'mg/mL' ? 'selected' : ''}>mg/mL</option>
+                  <option value="μg/L" ${initialUnit === 'μg/L' ? 'selected' : ''}>μg/L</option>
+                  <option value="μg/mL" ${initialUnit === 'μg/mL' ? 'selected' : ''}>μg/mL</option>
+                </select>
+              </div>
+            `
+            : `
+              <div class="input-group">
+                <label>Previous Final Conc.</label>
+                <input type="text" class="prev-conc" disabled>
+              </div>
+            `
+          }
+          <div class="input-group">
+            <label>Volume Taken (mL)</label>
+            <input type="number" class="vol-taken" placeholder="e.g., 1.0" step="any" min="0">
+          </div>
+          <div class="input-group">
+            <label>Diluted To (mL)</label>
+            <input type="number" class="diluted-to" placeholder="e.g., 10.0" step="any" min="0">
+          </div>
+        </div>
+      `;
+
+      document.getElementById('serialSteps').appendChild(stepDiv);
+
+      if (!isFirst) {
+        const removeBtn = document.createElement('div');
+        removeBtn.className = 'remove-step';
+        removeBtn.innerHTML = '<span>−</span> Remove Step';
+        removeBtn.onclick = () => removeSerialStep(stepId);
+        stepDiv.appendChild(removeBtn);
+      }
+    }
+
+    function removeSerialStep(stepId) {
+      const step = document.getElementById(stepId);
+      if (step) {
+        step.remove();
+        serialStepCount--;
+        updateStepNumbers();
+      }
+    }
+
+    function updateStepNumbers() {
+      const steps = document.querySelectorAll('#serialSteps .step');
+      steps.forEach((step, index) => {
+        const stepNum = index + 1;
+        step.querySelector('.step-number').textContent = stepNum;
+        step.querySelector('.step-header strong').textContent = `Dilution Step ${stepNum}`;
+      });
+    }
+
+    document.getElementById('addStepBtnDil').addEventListener('click', () => addSerialStep());
+
+    function calculateSerialDilution() {
+      const steps = document.querySelectorAll('#serialSteps .step');
+      if (steps.length === 0) {
+        alert('Add at least one dilution step');
+        return;
+      }
+
+      let currentConc = null;
+      let currentUnit = null;
+      let resultsHTML = '';
+
+      for (let i = 0; i < steps.length; i++) {
+        const step = steps[i];
+        const isFirst = i === 0;
+
+        let conc, unit, volTaken, dilutedTo;
+
+        if (isFirst) {
+          conc = parseFloat(step.querySelector('.initial-conc').value);
+          unit = step.querySelector('.initial-unit').value;
+        } else {
+          conc = currentConc;
+          unit = 'mg/L';
+          const prevConcInput = step.querySelector('.prev-conc');
+          if (prevConcInput) {
+            prevConcInput.value = `${formatNumber(conc)} mg/L`;
+          }
+        }
+
+        volTaken = parseFloat(step.querySelector('.vol-taken').value);
+        dilutedTo = parseFloat(step.querySelector('.diluted-to').value);
+
+        if (isNaN(conc) || isNaN(volTaken) || isNaN(dilutedTo)) {
+          alert(`Please enter valid numbers for Step ${i+1}`);
+          return;
+        }
+        if (volTaken <= 0 || dilutedTo <= 0) {
+          alert(`Volumes must be greater than zero for Step ${i+1}`);
+          return;
+        }
+        if (volTaken > dilutedTo) {
+          alert(`Volume taken cannot be greater than diluted volume for Step ${i+1}`);
+          return;
+        }
+
+        if (isFirst) {
+          currentConc = convertConc(conc, unit, 'mg/L');
+          currentUnit = 'mg/L';
+        }
+
+        const dilutionFactor = dilutedTo / volTaken;
+        currentConc = currentConc / dilutionFactor;
+
+        resultsHTML += `
+          <div class="card" style="margin-top: 10px;">
+            <div class="card-title" style="padding: 8px 0; border: none; font-size: 16px;">
+              <i>${i+1}</i>
+              <span>After Step ${i+1} Dilution</span>
+            </div>
+            <div class="units-grid">
+        `;
+
+        for (const u in concConvFactors) {
+          const convertedValue = convertConc(currentConc, 'mg/L', u);
+          resultsHTML += `
+            <div class="unit-card">
+              <div class="unit-name">${unitLabels[u]}</div>
+              <div class="unit-value">${formatNumber(convertedValue)}</div>
+            </div>
+          `;
+        }
+
+        resultsHTML += `</div></div>`;
+      }
+
+      document.getElementById('serialResultsContainer').innerHTML = resultsHTML;
+      document.getElementById('serialResultBox').classList.add('show');
+    }
+
+    // Initialize
+    showSection('basicMath');
+    updateUnits();
+    loadChemistryTool();
+    addSerialStep();
+// Register service worker if supported
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('SW registered:', reg))
+      .catch(err => console.error('SW registration failed:', err));
+  });
+}
+  </script>
+</body>
+</html>
