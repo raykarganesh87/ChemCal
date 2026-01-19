@@ -12,7 +12,8 @@
 
 <!-- Icons -->
 <link rel="apple-touch-icon" href="/ChemCal/icon-192.png">
-
+<link rel="icon" type="image/png" sizes="192x192" href="/ChemCal/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/ChemCal/icon-512.png">
   <style>
     /* Global */
     * ,
@@ -1483,14 +1484,17 @@
     updateUnits();
     loadChemistryTool();
     addSerialStep();
-// Register service worker if supported
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/ChemCal/sw.js')
-      .then(reg => console.log('SW registered:', reg))
-      .catch(err => console.error('SW registration failed:', err));
-  });
-}
   </script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker
+        .register('/ChemCal/sw.js')
+        .catch(function (err) {
+          console.error('Service Worker registration failed:', err);
+        });
+    });
+  }
+</script>
 </body>
 </html>
